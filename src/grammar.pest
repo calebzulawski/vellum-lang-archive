@@ -46,7 +46,8 @@ fn_expression = _{ function ~ argument_list ~ value+ }
 // Export a function
 export_argument = { symbol ~ ":" ~ primitive ~ width }
 export_argument_list = { "[" ~ export_argument ~ ("," ~ export_argument)* ~ "]" }
-export_expression = _{ export ~ symbol ~ export_argument_list ~ (symbol | expression) }
+export_symbol = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+export_expression = _{ export ~ export_symbol ~ export_argument_list ~ (symbol | expression) }
 
 // Call a function
 call_expression = _{ value* }
