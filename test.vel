@@ -3,3 +3,5 @@
 
 (def sqsum
   (fn [x, y] (+ (square x) (square y))))
+
+(export sqsum [x : f32 vector, y :  f32 scalar] sqsum)

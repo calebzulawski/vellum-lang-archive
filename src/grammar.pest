@@ -2,15 +2,35 @@ WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
 COMMENT = _{ "#" ~ (!"\n" ~ ANY)* }
 
 // Numbers can be integers, floating point, negative, etc
-number = @{ "-"? ~ ((ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT*) | (ASCII_DIGIT* ~ "." ~ ASCII_DIGIT+) | ASCII_DIGIT+) }
+integer = @{ ASCII_DIGIT+ }
+number = @{ "-"? ~ (integer ~ "." ~ integer?) | (integer? ~ "." ~ integer) | integer }
+
+// Width annotations
+scalar = { "scalar" }
+vector = { "vector" ~  ("of" ~ integer)? }
+width = { scalar | vector }
+
+// Type annotations
+u8  = { "u8"  }
+u16 = { "u16" }
+u32 = { "u32" }
+u64 = { "u64" }
+i8  = { "i8"  }
+i16 = { "i16" }
+i32 = { "i32" }
+i64 = { "i64" }
+f32 = { "f32" }
+f64 = { "f64" }
+primitive = { u8 | u16 | u32 | u64 | i8 | i16 | i32 | i64 | f32 | f64 }
 
 // Reserved names
 define = _{ "def" }
 function = _{ "fn" }
-reserved = _{ define | function }
+export = _{ "export" }
+reserved = _{ define | function | export }
 
-// Symbols can contain any symbol except whitespace, numbers, parens, brackets, or reserved names
-symbol = @{ !number ~ !reserved ~ (!("(" | ")" | "[" | "]") ~ ANY)+ }
+// Symbols can contain any symbol except whitespace, numbers, reserved names, or syntax characters
+symbol = @{ !number ~ !reserved ~ (!(WHITESPACE | "(" | ")" | "[" | "]" | ":" | ",") ~ ANY)+ }
 
 // Evaluates to something
 value = _{ number | symbol | expression }
@@ -19,18 +39,20 @@ value = _{ number | symbol | expression }
 def_expression = _{ define ~ symbol ~ value }
 
 // Create a function
-scalar = { "scalar" }
-vector = { "vector" }
-width = { scalar | vector }
 argument = { symbol ~ (":" ~ width)? }
 argument_list = { "[" ~ argument ~ ("," ~ argument)* ~ "]" }
 fn_expression = _{ function ~ argument_list ~ value+ }
+
+// Export a function
+export_argument = { symbol ~ ":" ~ primitive ~ width }
+export_argument_list = { "[" ~ export_argument ~ ("," ~ export_argument)* ~ "]" }
+export_expression = _{ export ~ symbol ~ export_argument_list ~ (symbol | expression) }
 
 // Call a function
 call_expression = _{ value* }
 
 // Expressions are nested in parens
-expression = { "(" ~ (def_expression | fn_expression | call_expression) ~ ")" }
+expression = { "(" ~ (def_expression | fn_expression | export_expression | call_expression) ~ ")" }
 
 // A program is just a list of expressions
 program = { SOI ~ expression* ~ EOI }
