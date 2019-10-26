@@ -1,0 +1,36 @@
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+COMMENT = _{ "#" ~ (!"\n" ~ ANY)* }
+
+// Numbers can be integers, floating point, negative, etc
+number = @{ "-"? ~ ((ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT*) | (ASCII_DIGIT* ~ "." ~ ASCII_DIGIT+) | ASCII_DIGIT+) }
+
+// Reserved names
+define = _{ "def" }
+function = _{ "fn" }
+reserved = _{ define | function }
+
+// Symbols can contain any symbol except whitespace, numbers, parens, brackets, or reserved names
+symbol = @{ !number ~ !reserved ~ (!("(" | ")" | "[" | "]") ~ ANY)+ }
+
+// Evaluates to something
+value = _{ number | symbol | expression }
+
+// Bind a name
+def_expression = _{ define ~ symbol ~ value }
+
+// Create a function
+scalar = { "scalar" }
+vector = { "vector" }
+width = { scalar | vector }
+argument = { symbol ~ (":" ~ width)? }
+argument_list = { "[" ~ argument ~ ("," ~ argument)* ~ "]" }
+fn_expression = _{ function ~ argument_list ~ value+ }
+
+// Call a function
+call_expression = _{ value* }
+
+// Expressions are nested in parens
+expression = { "(" ~ (def_expression | fn_expression | call_expression) ~ ")" }
+
+// A program is just a list of expressions
+program = { SOI ~ expression* ~ EOI }
