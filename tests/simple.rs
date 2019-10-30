@@ -1,6 +1,6 @@
 vellum_lang::define! {
-    impl mul a b = { std::ops::Mul::mul($a, $b) };
-    impl add a b = { std::ops::Add::add($a, $b) };
+    impl mul a b = { $a * $b };
+    impl add a b = { $a + $b };
 //    let square x = mul x x;
 //    let sqsum x y = add (square x) (square y);
 }
