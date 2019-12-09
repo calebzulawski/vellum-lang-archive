@@ -3,6 +3,11 @@ name = "vellum-lang"
 version = "0.1.0"
 authors = ["Caleb Zulawski <caleb.zulawski@gmail.com>"]
 edition = "2018"
+build = "build.rs"
 
 [dependencies]
-tt-call = "1"
+lalrpop-util = "0.17"
+regex = "1"
+
+[build-dependencies]
+lalrpop = "0.17"

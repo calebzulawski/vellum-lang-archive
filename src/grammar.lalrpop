@@ -1,0 +1,31 @@
+use std::str::FromStr;
+use crate::Value;
+use crate::ast::{Statement, Expression, Assignment};
+
+grammar;
+
+Integer: i64 = {
+    r"-?\d+" => <>.parse().unwrap(),
+}
+
+Name: String = {
+    r"[^(){}:_\-\s\d][^(){}:_\s]*" => <>.to_owned(),
+}
+
+ExprTree: Expression = {
+    Integer => Expression::Literal(Value::Integer(<>)),
+    Name => Expression::Name(<>),
+    "(" <Expr> ")" => <>
+}
+
+pub Expr: Expression = {
+    <ExprTree*> => { if <>.len() == 1 { <>[0].clone() } else { Expression::List(<>) } }
+}
+
+pub Assign: Assignment = {
+    <name:Name> "=" <value:Expr> => Assignment { name, value }
+}
+
+pub Stmt: Statement = {
+    <Assign> ";" => Statement::Assignment(<>)
+}
